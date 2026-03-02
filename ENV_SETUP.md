@@ -8,41 +8,32 @@ Add these environment variables in your Vercel project settings (Settings → En
 |----------|-------------|---------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | `https://xxxxx.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous (public) key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-side only) | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+| `RESEND_API_KEY` | Resend API key for sending verification emails | `re_xxxxx` |
 
-## Email Verification (Resend - Configure in Supabase)
+## Optional
 
-To send verification codes via Resend, configure Resend as your SMTP provider in Supabase:
-
-1. Go to **Supabase Dashboard** → **Project Settings** → **Authentication** → **SMTP Settings**
-2. Enable "Custom SMTP"
-3. Use Resend's SMTP credentials:
-   - **Host:** `smtp.resend.com`
-   - **Port:** `465` (SSL) or `587` (TLS)
-   - **Username:** `resend`
-   - **Password:** Your Resend API key (`re_xxxxx`)
-
-4. Get your Resend API key from [resend.com](https://resend.com)
-
-5. **Supabase Email Template (for OTP):** Go to **Authentication** → **Email Templates** → **Magic Link**. Update the template to display the 6-digit code:
-   ```
-   <h2>Your verification code</h2>
-   <p>Enter this code: {{ .Token }}</p>
-   <p>This code expires in 1 hour.</p>
-   ```
-   The `{{ .Token }}` variable contains the 6-digit OTP that users enter on the login/sign-up page.
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `RESEND_FROM_EMAIL` | From address for emails (must verify domain in Resend) | `Strata Manager <noreply@yourdomain.com>` |
+| `NEXT_PUBLIC_APP_URL` | For production redirect (Vercel sets VERCEL_URL automatically) | `https://yourdomain.com` |
 
 ## Summary - Vercel Environment Variables
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+RESEND_API_KEY=re_xxxxx
 ```
 
-**Note:** Button spam is prevented with client-side throttling—users must wait 60 seconds between OTP requests. Supabase also enforces its own rate limit (1 OTP per 60 seconds per email).
+**Note:** Verification codes are sent via Resend (6-digit code), not Supabase links. Button spam is prevented with client-side throttling—users must wait 60 seconds between OTP requests.
 
 ## Supabase Setup
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Run the migration in `supabase/migrations/20240302000000_initial.sql` via the SQL Editor
+2. Run the migrations in `supabase/migrations/` via the SQL Editor (in order):
+   - `20240302000000_initial.sql`
+   - `20240302000001_verification_codes.sql`
 3. Enable Email provider in Authentication → Providers
-4. Configure Resend SMTP as above for verification emails
+4. Add your app URL to Authentication → URL Configuration → Redirect URLs (e.g. `https://yourdomain.com/**`)

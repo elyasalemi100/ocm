@@ -70,8 +70,12 @@ export default function SignUpPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Invalid code')
-      router.push('/dashboard')
-      router.refresh()
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl
+      } else {
+        router.push('/dashboard')
+        router.refresh()
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
