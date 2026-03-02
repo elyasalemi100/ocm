@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/input-otp'
 import { Building2 } from 'lucide-react'
 
+const RESEND_COOLDOWN_SECONDS = 60
+
 export default function SignUpPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -27,6 +29,13 @@ export default function SignUpPage() {
   const [step, setStep] = useState<'email' | 'verify'>('email')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [cooldown, setCooldown] = useState(0)
+
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const timer = setInterval(() => setCooldown((c) => c - 1), 1000)
+    return () => clearInterval(timer)
+  }, [cooldown])
 
   async function handleRequestOtp(e: React.FormEvent) {
     e.preventDefault()
@@ -41,6 +50,7 @@ export default function SignUpPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to send code')
       setStep('verify')
+      setCooldown(RESEND_COOLDOWN_SECONDS)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -103,8 +113,16 @@ export default function SignUpPage() {
               {error && (
                 <p className="text-sm text-destructive">{error}</p>
               )}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Sending...' : 'Send verification code'}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || cooldown > 0}
+              >
+                {loading
+                  ? 'Sending...'
+                  : cooldown > 0
+                    ? `Resend in ${cooldown}s`
+                    : 'Send verification code'}
               </Button>
             </form>
           ) : (
@@ -136,15 +154,29 @@ export default function SignUpPage() {
               >
                 {loading ? 'Verifying...' : 'Verify and create account'}
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => setStep('email')}
-                disabled={loading}
-              >
-                Use different email
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={(e) => {
+                    setError('')
+                    handleRequestOtp(e)
+                  }}
+                  disabled={loading || cooldown > 0}
+                >
+                  {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => setStep('email')}
+                  disabled={loading}
+                >
+                  Different email
+                </Button>
+              </div>
             </form>
           )}
         </CardContent>

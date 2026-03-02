@@ -9,15 +9,6 @@ Add these environment variables in your Vercel project settings (Settings → En
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | `https://xxxxx.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous (public) key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
 
-## Rate Limiting (Upstash Redis)
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST API URL | `https://xxxxx.upstash.io` |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST API token | `AXxxxx...` |
-
-> **Note:** Rate limiting uses Upstash Redis (free tier available at [upstash.com](https://upstash.com)). If not set, rate limiting is disabled (not recommended for production).
-
 ## Email Verification (Resend - Configure in Supabase)
 
 To send verification codes via Resend, configure Resend as your SMTP provider in Supabase:
@@ -45,9 +36,9 @@ To send verification codes via Resend, configure Resend as your SMTP provider in
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-upstash-token
 ```
+
+**Note:** Button spam is prevented with client-side throttling—users must wait 60 seconds between OTP requests. Supabase also enforces its own rate limit (1 OTP per 60 seconds per email).
 
 ## Supabase Setup
 
