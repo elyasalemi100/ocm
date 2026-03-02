@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     // Send email via Resend
     const resend = new Resend(resendKey)
     const { error: emailError } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'Strata Manager <onboarding@resend.dev>',
+      from: process.env.RESEND_EMAIL || process.env.RESEND_FROM_EMAIL || 'Strata Manager <onboarding@resend.dev>',
       to: normalizedEmail,
       subject: 'Your Strata Manager verification code',
       html: `

@@ -15,7 +15,7 @@ Add these environment variables in your Vercel project settings (Settings → En
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `RESEND_FROM_EMAIL` | From address for emails (must verify domain in Resend) | `Strata Manager <noreply@yourdomain.com>` |
+| `RESEND_EMAIL` | From address for emails (must verify domain in Resend) | `Security <security@advancewaterproofing.com.au>` |
 | `NEXT_PUBLIC_APP_URL` | For production redirect (Vercel sets VERCEL_URL automatically) | `https://yourdomain.com` |
 
 ## Summary - Vercel Environment Variables
