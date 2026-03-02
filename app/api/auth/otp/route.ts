@@ -19,7 +19,14 @@ export async function POST(request: Request) {
   const resendKey = process.env.RESEND_API_KEY
   if (!resendKey) {
     return NextResponse.json(
-      { error: 'Email service not configured' },
+      { error: 'RESEND_API_KEY is not configured' },
+      { status: 500 }
+    )
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json(
+      { error: 'SUPABASE_SERVICE_ROLE_KEY is not configured' },
       { status: 500 }
     )
   }
@@ -53,15 +60,22 @@ export async function POST(request: Request) {
     if (insertError) {
       console.error('Failed to store verification code:', insertError)
       return NextResponse.json(
-        { error: 'Failed to send verification code' },
+        {
+          error: 'Failed to send verification code',
+          detail: insertError.message,
+        },
         { status: 500 }
       )
     }
 
     // Send email via Resend
+    const fromEmail =
+      process.env.RESEND_EMAIL ||
+      process.env.RESEND_FROM_EMAIL ||
+      'Strata Manager <onboarding@resend.dev>'
     const resend = new Resend(resendKey)
     const { error: emailError } = await resend.emails.send({
-      from: process.env.RESEND_EMAIL || process.env.RESEND_FROM_EMAIL || 'Strata Manager <onboarding@resend.dev>',
+      from: fromEmail,
       to: normalizedEmail,
       subject: 'Your Strata Manager verification code',
       html: `
@@ -75,16 +89,23 @@ export async function POST(request: Request) {
     if (emailError) {
       console.error('Failed to send email:', emailError)
       return NextResponse.json(
-        { error: 'Failed to send verification code' },
+        {
+          error: 'Failed to send verification code',
+          detail: emailError.message,
+        },
         { status: 500 }
       )
     }
 
     return NextResponse.json({ message: 'Verification code sent to your email' })
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
     console.error('OTP error:', err)
     return NextResponse.json(
-      { error: 'Failed to send verification code' },
+      {
+        error: 'Failed to send verification code',
+        detail: message,
+      },
       { status: 500 }
     )
   }

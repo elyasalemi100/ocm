@@ -48,7 +48,7 @@ export default function SignUpPage() {
         body: JSON.stringify({ email }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to send code')
+      if (!res.ok) throw new Error(data.detail || data.error || 'Failed to send code')
       setStep('verify')
       setCooldown(RESEND_COOLDOWN_SECONDS)
     } catch (err) {
@@ -69,7 +69,7 @@ export default function SignUpPage() {
         body: JSON.stringify({ email, token }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Invalid code')
+      if (!res.ok) throw new Error(data.detail || data.error || 'Invalid code')
       if (data.redirectUrl) {
         window.location.href = data.redirectUrl
       } else {
