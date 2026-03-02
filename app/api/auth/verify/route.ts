@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         type: 'magiclink',
         email: normalizedEmail,
         options: {
-          redirectTo: `${baseUrl}/dashboard`,
+          redirectTo: `${baseUrl}/auth/callback?next=/dashboard`,
         },
       })
 
