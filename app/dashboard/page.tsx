@@ -28,10 +28,13 @@ export default async function DashboardPage() {
       }
     >
       <AppSidebar variant="inset" user={user} />
-      <SidebarInset>
+      <SidebarInset className="overflow-hidden">
         <SiteHeader isAdmin={profile?.role === 'admin'} />
-        <div className="flex flex-1 flex-col min-h-0 overflow-auto">
-          <div className="flex flex-1 flex-col gap-4 p-4 lg:p-6">
+        <div
+          className="flex-1 overflow-y-auto overflow-x-hidden"
+          style={{ minHeight: 0 }}
+        >
+          <div className="flex flex-col gap-4 p-4 lg:p-6">
             <h2 className="text-lg font-semibold">Dashboard</h2>
             <p className="text-muted-foreground">
               Welcome to Strata Manager. More features coming soon.

@@ -33,10 +33,13 @@ export default async function AdminPage() {
       }
     >
       <AppSidebar variant="inset" user={user} />
-      <SidebarInset>
+      <SidebarInset className="overflow-hidden">
         <SiteHeader isAdmin={true} />
-        <div className="flex flex-1 flex-col min-h-0 overflow-auto">
-          <div className="flex flex-1 flex-col gap-4 p-4 lg:p-6">
+        <div
+          className="flex-1 overflow-y-auto overflow-x-hidden"
+          style={{ minHeight: 0 }}
+        >
+          <div className="flex flex-col gap-4 p-4 lg:p-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
