@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { isAdmin } from '@/lib/get-profile'
 import { AppSidebar } from '@/components/app-sidebar'
 import { SiteHeader } from '@/components/site-header'
 import {
@@ -17,6 +18,11 @@ export default async function AdminPage() {
     redirect('/login')
   }
 
+  const userIsAdmin = await isAdmin(user.id)
+  if (!userIsAdmin) {
+    redirect('/dashboard')
+  }
+
   return (
     <SidebarProvider
       style={
@@ -28,28 +34,26 @@ export default async function AdminPage() {
     >
       <AppSidebar variant="inset" user={user} />
       <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Admin Dashboard
-                  </CardTitle>
-                  <CardDescription>
-                    Strata Management Software - Admin area
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Welcome, {user.email}. This is the admin dashboard. More
-                    functionality coming soon.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+        <SiteHeader isAdmin={true} />
+        <div className="flex flex-1 flex-col min-h-0 overflow-auto">
+          <div className="flex flex-1 flex-col gap-4 p-4 lg:p-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Admin Dashboard
+                </CardTitle>
+                <CardDescription>
+                  Strata Management Software - Admin area
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Welcome, {user.email}. This is the admin dashboard. More
+                  functionality coming soon.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </SidebarInset>
