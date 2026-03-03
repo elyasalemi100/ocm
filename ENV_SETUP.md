@@ -36,4 +36,8 @@ RESEND_API_KEY=re_xxxxx
    - `20240302000000_initial.sql`
    - `20240302000001_verification_codes.sql`
 3. Enable Email provider in Authentication → Providers
-4. Add your app URL to Authentication → URL Configuration → Redirect URLs (e.g. `https://yourdomain.com/**`)
+4. **URL Configuration** (Supabase → Authentication → URL Configuration):
+   - **Site URL**: Your app root (e.g. `https://your-app.vercel.app` or `http://localhost:3000` for dev)
+   - **Redirect URLs**: Add both:
+     - `https://your-app.vercel.app/**`
+     - `http://localhost:3000/**`
