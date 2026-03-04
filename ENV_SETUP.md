@@ -27,7 +27,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 RESEND_API_KEY=re_xxxxx
 ```
 
-**Note:** Verification codes are sent via Resend (6-digit code), not Supabase links. Button spam is prevented with client-side throttling—users must wait 60 seconds between OTP requests.
+**Note:** Sign up uses OTP verification via Resend, then users set a password. Login uses email + password. Button spam is prevented with client-side throttling—users must wait 60 seconds between OTP requests.
 
 ## Supabase Setup
 
