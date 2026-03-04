@@ -1,8 +1,9 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const { email, token } = await request.json()
+  const { email, token, password } = await request.json()
 
   if (!email || !token) {
     return NextResponse.json(
@@ -11,14 +12,21 @@ export async function POST(request: Request) {
     )
   }
 
+  if (!password || password.length < 6) {
+    return NextResponse.json(
+      { error: 'Password must be at least 6 characters' },
+      { status: 400 }
+    )
+  }
+
   const normalizedEmail = email.trim().toLowerCase()
   const code = token.trim()
 
   try {
-    const supabase = createAdminClient()
+    const supabaseAdmin = createAdminClient()
 
     // Find valid verification code
-    const { data: codes, error: fetchError } = await supabase
+    const { data: codes, error: fetchError } = await supabaseAdmin
       .from('verification_codes')
       .select('id')
       .eq('email', normalizedEmail)
@@ -34,36 +42,54 @@ export async function POST(request: Request) {
     }
 
     // Delete used code
-    await supabase
+    await supabaseAdmin
       .from('verification_codes')
       .delete()
       .eq('id', codes[0].id)
 
-    // Generate magic link to establish session
-    const baseUrl =
-      process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const { data: linkData, error: linkError } =
-      await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: normalizedEmail,
-        options: {
-          redirectTo: `${baseUrl}/auth/callback?next=/dashboard`,
-        },
+    // Get user by email (user was created in OTP flow)
+    const { data: usersData } = await supabaseAdmin.auth.admin.listUsers({
+      perPage: 1000,
+    })
+    const user = usersData?.users?.find(
+      (u) => u.email?.toLowerCase() === normalizedEmail
+    )
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found. Please request a new verification code.' },
+        { status: 400 }
+      )
+    }
+
+    // Update user password
+    const { error: updateError } =
+      await supabaseAdmin.auth.admin.updateUserById(user.id, {
+        password,
       })
 
-    if (linkError || !linkData?.properties?.action_link) {
+    if (updateError) {
       return NextResponse.json(
-        { error: 'Failed to sign in' },
+        { error: updateError.message },
         { status: 500 }
       )
     }
 
-    return NextResponse.json({
-      message: 'Success',
-      redirectUrl: linkData.properties.action_link,
+    // Sign in with password to set session
+    const supabase = await createClient()
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
     })
+
+    if (signInError) {
+      return NextResponse.json(
+        { error: 'Account created. Please log in with your password.' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ message: 'Success' })
   } catch (err) {
     console.error('Verify error:', err)
     return NextResponse.json(
